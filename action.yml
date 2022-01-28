@@ -1,0 +1,16 @@
+name: 'Broken link checker'
+description: 'A github action to periodically check a site for broken links'
+author: 'Harrison Pim'
+branding:
+  icon: 'link'
+  color: 'green'
+inputs:
+    sitemap-url:
+        description: 'The root URL of the website you wish to crawl'
+        required: true
+outputs:
+    broken-links:
+        description: 'A list of broken links'
+runs:
+  using: 'node16'
+  main: 'index.js'

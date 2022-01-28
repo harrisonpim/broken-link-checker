@@ -1,0 +1,15 @@
+{
+  "name": "broken-link-checker",
+  "version": "1.0.0",
+  "description": "A github action to periodically check a site for broken links",
+  "main": "index.js",
+  "repository": "git@github.com:harrisonpim/broken-link-checker.git",
+  "author": "hello@harrisonpim.com",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.6.0",
+    "@actions/github": "^5.0.0",
+    "cheerio": "^1.0.0-rc.10",
+    "node-fetch": "^3.2.0"
+  }
+}
