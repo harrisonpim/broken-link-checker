@@ -1,4 +1,4 @@
-name: 'Broken link checker'
+name: 'harrisonpim/broken-link-checker'
 description: 'A github action to periodically check a site for broken links'
 author: 'Harrison Pim'
 branding:
