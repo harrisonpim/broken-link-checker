@@ -25,7 +25,7 @@ jobs:
   check-site-for-broken-links:
     runs-on: ubuntu-latest
     steps:
-      - uses: harrisonpim/broken-link-checker
+      - uses: harrisonpim/broken-link-checker@0.1.2
         with:
           sitemap: https://harrisonpim.com/sitemap.xml"
 ```

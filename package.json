@@ -1,6 +1,6 @@
 {
   "name": "broken-link-checker",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A github action to periodically check a site for broken links",
   "main": "index.js",
   "repository": "git@github.com:harrisonpim/broken-link-checker.git",
