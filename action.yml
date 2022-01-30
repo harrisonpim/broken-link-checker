@@ -5,7 +5,7 @@ branding:
   icon: 'link'
   color: 'green'
 inputs:
-    sitemap-url:
+    sitemap:
         description: 'The root URL of the website you wish to crawl'
         required: true
 outputs:
