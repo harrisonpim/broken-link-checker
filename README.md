@@ -8,7 +8,9 @@ This action takes a sitemap as input, and checks each of its URLs for broken lin
 
 ## Outputs
 
-- `broken-links`: A list of broken links found, with the page they were found on.
+If no broken links are found, the action passes silently. If any links are broken, the action will fail with:
+
+- `broken-links`: A list of broken links, with the page they were found on.
 
 ## Example usage
 
@@ -27,5 +29,5 @@ jobs:
     steps:
       - uses: harrisonpim/broken-link-checker@0.1.2
         with:
-          sitemap: https://harrisonpim.com/sitemap.xml"
+          sitemap: https://harrisonpim.com/sitemap.xml
 ```
