@@ -23,6 +23,15 @@ on:
     - cron: "0 0 * * 0"
     # every Sunday at midnight
     # see https://crontab.guru/#0_0_*_*_0
+  workflow_dispatch: 
+    # see https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/ for documentation
+    inputs: 
+      logLevel: 
+        default: warning
+        description: "Log level"
+        required: true
+      tags: 
+       description: 'Run manually'
 jobs:
   check-site-for-broken-links:
     runs-on: ubuntu-latest
@@ -31,3 +40,5 @@ jobs:
         with:
           sitemap: https://harrisonpim.com/sitemap.xml
 ```
+This yml file contains a section (workflow_dispatch) which allows the action to be run manually. To do this, after installing the action, 
+navigate to actions, choose this action and then look for the run workflow button and follow the steps. 
