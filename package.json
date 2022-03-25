@@ -4,7 +4,8 @@
   "description": "A github action to periodically check a site for broken links",
   "scripts": {
     "lint": "eslint . --fix",
-    "index": "ts-node index.ts",
+    "main": "ts-node index.ts",
+    "prepare": "ncc build index.js --license licenses.txt",
     "test": "jest"
   },
   "main": "index.ts",
@@ -15,8 +16,7 @@
     "@actions/core": "^1.6.0",
     "@actions/github": "^5.0.0",
     "@vercel/ncc": "^0.33.3",
-    "cheerio": "^1.0.0-rc.10",
-    "node-fetch": "^3.2.0"
+    "cheerio": "^1.0.0-rc.10"
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",

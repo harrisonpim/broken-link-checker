@@ -13,4 +13,4 @@ outputs:
         description: 'A list of broken links'
 runs:
   using: 'node16'
-  main: 'index.js'
+  main: 'dist/index.js'
