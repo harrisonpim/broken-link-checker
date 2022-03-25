@@ -1,56 +1,43 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
-const cheerio = require("cheerio");
+
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
-function makeUrlAbsolute(url, baseUrl) {
-  if (!url.startsWith("http") & !url.startsWith("mailto")) {
-    return (
-      baseUrl.replace(/^\/+|\/+$/g, "") + "/" + url.replace(/^\/+|\/+$/g, "")
-    );
-  }
-  return url;
-}
+import { getLinksOnPage, getUrlsFromSitemap } from "./src/sitemap.js";
 
-(async () => {
+import { getBaseUrl } from "./src/url.js";
+
+async function run() {
   try {
-    const sitemapUrl = core.getInput("sitemap");
+    // get the sitemap from github actions, or arguments if invoked from CLI
+    const sitemapUrl = core.getInput("sitemap") || process.argv[2];
+    console.debug(`sitemapUrl: ${sitemapUrl}`);
 
     // construct the base url from the sitemap url
-    const baseUrl = sitemapUrl.substring(0, sitemapUrl.lastIndexOf("/") + 1);
+    const baseUrl = getBaseUrl(sitemapUrl);
+    console.debug(`baseUrl: ${baseUrl}`);
 
     // fetch the sitemap and parse a list of URLs from it
     const sitemap = await fetch(sitemapUrl).then((res) => res.text());
-    const urls = [];
-    const $ = cheerio.load(sitemap, { xmlMode: true });
-    $("loc").each(function () {
-      const url = $(this).text();
-      if (!urls.includes(url)) {
-        urls.push(url);
-      }
-    });
+    console.debug(`sitemap: ${sitemap}`);
+
+    const urls = await getUrlsFromSitemap(sitemap);
+    console.debug(`urls: ${urls}`);
 
     // we'll return an object with each URL from the sitemap keys and a list
     // of any links which do not return a 200 as the values
     const brokenLinks = {};
     for (const url of urls) {
       try {
-        const response = await fetch(url).then((res) => res.text());
-        const $ = cheerio.load(response, { xmlMode: true });
-        const linksOnPage = [];
-        $("a").each(function () {
-          const href = $(this).attr("href");
-          if (href) {
-            linksOnPage.push(makeUrlAbsolute(href, baseUrl));
-          }
-        });
+        const page = await fetch(url).then((res) => res.text());
+        const linksOnPage = await getLinksOnPage(page, baseUrl);
         const brokenLinksOnPage = [];
         for (const url of linksOnPage) {
           if (url.startsWith("http")) {
             try {
               const response = await fetch(url);
-              const status = response.status;
+              const { status } = response;
               if (status !== 200) {
                 brokenLinksOnPage.push(url);
               }
@@ -80,8 +67,9 @@ function makeUrlAbsolute(url, baseUrl) {
     if (failureMessages.length > 0) {
       core.setFailed(failureMessages.join("\n"));
     }
-    
   } catch (error) {
     core.setFailed(error.message);
   }
-})();
+}
+
+run();
