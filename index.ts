@@ -1,23 +1,19 @@
-const core = require('@actions/core')
-const github = require('@actions/github')
-
-const fetch = (...args) =>
-  import('node-fetch').then(({ default: fetch }) => fetch(...args))
-
+import { getInput, setFailed, warning } from '@actions/core'
 import { getLinksOnPage, getUrlsFromSitemap } from './src/sitemap'
 
+import { fetchWithCache } from './src/fetch'
 import { getBaseUrl } from './src/url'
 
 async function run() {
   try {
     // get the sitemap from github actions, or arguments if invoked from CLI
-    const sitemapUrl = core.getInput('sitemap') || process.argv[2]
+    const sitemapUrl = getInput('sitemap') || process.argv[2]
 
     // construct the base url from the sitemap url
     const baseUrl = getBaseUrl(sitemapUrl)
 
     // fetch the sitemap and parse a list of URLs from it
-    const sitemap = await fetch(sitemapUrl).then((res) => res.text())
+    const sitemap = await fetchWithCache(sitemapUrl).then((res) => res.text())
     const urls = await getUrlsFromSitemap(sitemap)
 
     // we'll return an object with each URL from the sitemap keys and a list
@@ -25,13 +21,13 @@ async function run() {
     const brokenLinks = {}
     for (const url of urls) {
       try {
-        const page = await fetch(url).then((res) => res.text())
+        const page = await fetchWithCache(url).then((res) => res.text())
         const linksOnPage = await getLinksOnPage(page, baseUrl)
         const brokenLinksOnPage = []
         for (const url of linksOnPage) {
           if (url.startsWith('http')) {
             try {
-              const response = await fetch(url)
+              const response = await fetchWithCache(url)
               const { status } = response
               if (status !== 200) {
                 brokenLinksOnPage.push(url)
@@ -43,7 +39,7 @@ async function run() {
         }
         brokenLinks[url] = brokenLinksOnPage
       } catch (error) {
-        core.warning(`Failed to fetch ${url}`)
+        warning(`Failed to fetch ${url}`)
         brokenLinks[url] = []
       }
     }
@@ -60,10 +56,10 @@ async function run() {
 
     // if there are any broken links, set the action status to failure
     if (failureMessages.length > 0) {
-      core.setFailed(failureMessages.join('\n'))
+      setFailed(failureMessages.join('\n'))
     }
   } catch (error) {
-    core.setFailed(error.message)
+    setFailed(error.message)
   }
 }
 
