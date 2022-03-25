@@ -1,17 +1,13 @@
-const core = require('@actions/core')
-const github = require('@actions/github')
-
-const fetch = (...args) =>
-  import('node-fetch').then(({ default: fetch }) => fetch(...args))
-
+import { getInput, setFailed, warning } from '@actions/core'
 import { getLinksOnPage, getUrlsFromSitemap } from './src/sitemap'
 
+import fetch from 'node-fetch'
 import { getBaseUrl } from './src/url'
 
 async function run() {
   try {
     // get the sitemap from github actions, or arguments if invoked from CLI
-    const sitemapUrl = core.getInput('sitemap') || process.argv[2]
+    const sitemapUrl = getInput('sitemap') || process.argv[2]
 
     // construct the base url from the sitemap url
     const baseUrl = getBaseUrl(sitemapUrl)
@@ -43,7 +39,7 @@ async function run() {
         }
         brokenLinks[url] = brokenLinksOnPage
       } catch (error) {
-        core.warning(`Failed to fetch ${url}`)
+        warning(`Failed to fetch ${url}`)
         brokenLinks[url] = []
       }
     }
@@ -60,10 +56,10 @@ async function run() {
 
     // if there are any broken links, set the action status to failure
     if (failureMessages.length > 0) {
-      core.setFailed(failureMessages.join('\n'))
+      setFailed(failureMessages.join('\n'))
     }
   } catch (error) {
-    core.setFailed(error.message)
+    setFailed(error.message)
   }
 }
 

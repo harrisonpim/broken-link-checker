@@ -3,7 +3,7 @@ module.exports = {
     browser: true,
     es2021: true,
   },
-  extends: ['airbnb-base'],
+  extends: ['prettier'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
@@ -11,4 +11,4 @@ module.exports = {
   },
   plugins: ['@typescript-eslint'],
   rules: {},
-};
+}
