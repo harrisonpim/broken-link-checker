@@ -1,7 +1,7 @@
 import { getInput, setFailed, warning } from '@actions/core'
 import { getLinksOnPage, getUrlsFromSitemap } from './src/sitemap'
 
-import fetch from 'node-fetch'
+import { fetchWithCache } from './src/fetch'
 import { getBaseUrl } from './src/url'
 
 async function run() {
@@ -13,7 +13,7 @@ async function run() {
     const baseUrl = getBaseUrl(sitemapUrl)
 
     // fetch the sitemap and parse a list of URLs from it
-    const sitemap = await fetch(sitemapUrl).then((res) => res.text())
+    const sitemap = await fetchWithCache(sitemapUrl).then((res) => res.text())
     const urls = await getUrlsFromSitemap(sitemap)
 
     // we'll return an object with each URL from the sitemap keys and a list
@@ -21,13 +21,13 @@ async function run() {
     const brokenLinks = {}
     for (const url of urls) {
       try {
-        const page = await fetch(url).then((res) => res.text())
+        const page = await fetchWithCache(url).then((res) => res.text())
         const linksOnPage = await getLinksOnPage(page, baseUrl)
         const brokenLinksOnPage = []
         for (const url of linksOnPage) {
           if (url.startsWith('http')) {
             try {
-              const response = await fetch(url)
+              const response = await fetchWithCache(url)
               const { status } = response
               if (status !== 200) {
                 brokenLinksOnPage.push(url)

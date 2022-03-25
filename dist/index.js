@@ -27233,6 +27233,31 @@ function fixResponseChunkedTransferBadEnding(request, errorCallback) {
 	});
 }
 
+;// CONCATENATED MODULE: ./src/fetch.ts
+var fetch_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+const cache = new Map();
+function fetchWithCache(url) {
+    return fetch_awaiter(this, void 0, void 0, function* () {
+        if (cache.has(url)) {
+            console.debug('Using cached response for', url);
+            return cache.get(url);
+        }
+        const response = yield fetch(url);
+        cache.set(url, response);
+        console.debug('Using network response for', url);
+        return response;
+    });
+}
+
 ;// CONCATENATED MODULE: ./index.ts
 var index_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -27255,20 +27280,20 @@ function run() {
             // construct the base url from the sitemap url
             const baseUrl = getBaseUrl(sitemapUrl);
             // fetch the sitemap and parse a list of URLs from it
-            const sitemap = yield fetch(sitemapUrl).then((res) => res.text());
+            const sitemap = yield fetchWithCache(sitemapUrl).then((res) => res.text());
             const urls = yield getUrlsFromSitemap(sitemap);
             // we'll return an object with each URL from the sitemap keys and a list
             // of any links which do not return a 200 as the values
             const brokenLinks = {};
             for (const url of urls) {
                 try {
-                    const page = yield fetch(url).then((res) => res.text());
+                    const page = yield fetchWithCache(url).then((res) => res.text());
                     const linksOnPage = yield getLinksOnPage(page, baseUrl);
                     const brokenLinksOnPage = [];
                     for (const url of linksOnPage) {
                         if (url.startsWith('http')) {
                             try {
-                                const response = yield fetch(url);
+                                const response = yield fetchWithCache(url);
                                 const { status } = response;
                                 if (status !== 200) {
                                     brokenLinksOnPage.push(url);
