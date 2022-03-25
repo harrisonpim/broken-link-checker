@@ -6,17 +6,27 @@ import { getBaseUrl } from './src/url'
 
 async function run() {
   try {
-    // get the sitemap from github actions, or arguments if invoked from CLI
+    // Get the sitemap from github actions, or arguments if invoked from CLI
     const sitemapUrl = getInput('sitemap') || process.argv[2]
 
-    // construct the base url from the sitemap url
+    // Get a list of allowed urls from the action input, or arguments if invoked from CLI.
+    // The list should be formatted as a JSON array of strings, eg:
+    // [
+    //   "https://example.com/",
+    //   "https://example.com/page1",
+    //   "https://example.com/page2"
+    // ]
+    const rawAllowList = getInput('allowList') || process.argv[3]
+    const allowList = JSON.parse(rawAllowList)
+
+    // Construct the base url from the sitemap url
     const baseUrl = getBaseUrl(sitemapUrl)
 
-    // fetch the sitemap and parse a list of URLs from it
+    // Fetch the sitemap and parse a list of URLs from it
     const sitemap = await fetchWithCache(sitemapUrl).then((res) => res.text())
     const urls = await getUrlsFromSitemap(sitemap)
 
-    // we'll return an object with each URL from the sitemap keys and a list
+    // We'll return an object with each URL from the sitemap keys and a list
     // of any links which do not return a 200 as the values
     const brokenLinks = {}
     for (const url of urls) {
@@ -25,7 +35,7 @@ async function run() {
         const linksOnPage = await getLinksOnPage(page, baseUrl)
         const brokenLinksOnPage = []
         for (const url of linksOnPage) {
-          if (url.startsWith('http')) {
+          if (url.startsWith('http') && !allowList.includes(url)) {
             try {
               const response = await fetchWithCache(url)
               const { status } = response
@@ -44,7 +54,7 @@ async function run() {
       }
     }
 
-    // construct a failure message for any links which don't return a 200
+    // Construct a failure message for any links which don't return a 200
     const failureMessages = []
     for (const url in brokenLinks) {
       if (brokenLinks[url].length > 0) {
@@ -54,7 +64,7 @@ async function run() {
       }
     }
 
-    // if there are any broken links, set the action status to failure
+    // If there are any broken links, set the action status to failure
     if (failureMessages.length > 0) {
       setFailed(failureMessages.join('\n'))
     }
