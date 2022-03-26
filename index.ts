@@ -6,7 +6,7 @@ import {
 import { getBaseUrl, isBroken } from './src/url'
 import { setFailed, warning } from '@actions/core'
 
-import { fetchWithCache } from './src/fetch'
+import fetch from 'node-fetch'
 import { gatherArgs } from './src/args'
 
 const log = require('debug')('index')
@@ -33,7 +33,7 @@ async function run() {
     const baseUrl = getBaseUrl(sitemapUrl)
 
     // Fetch the sitemap and parse a list of URLs from it
-    const sitemap = await fetchWithCache(sitemapUrl).then((res) => res.text())
+    const sitemap = await fetch(sitemapUrl).then((res) => res.text())
     const urls = await getUrlsFromSitemap(sitemap)
 
     // We'll return an object with each URL from the sitemap keys and a list
@@ -41,7 +41,8 @@ async function run() {
     const brokenLinks = {}
     for (const url of urls) {
       try {
-        const page = await fetchWithCache(url).then((res) => res.text())
+        log(`Checking ${url}`)
+        const page = await fetch(url).then((res) => res.text())
         const linksOnPage = await getLinksOnPage(page, baseUrl)
         const linksToCheck = filterAllowedLinks(linksOnPage, allowList)
         const brokenLinksOnPage = []
@@ -50,6 +51,7 @@ async function run() {
             brokenLinksOnPage.push(url)
           }
         }
+        log(`Found ${brokenLinksOnPage.length} broken links on ${url}`)
         brokenLinks[url] = brokenLinksOnPage
       } catch (error) {
         warning(`Failed to fetch ${url}`)

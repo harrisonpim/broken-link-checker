@@ -20,8 +20,7 @@ export async function isBroken(url) {
   let broken = false
   if (url.startsWith('http')) {
     try {
-      const response = await fetchWithCache(url)
-      const { status } = response
+      const status = await fetchWithCache(url)
       log(`${url} returned ${status}`)
       if (status !== 200) {
         broken = true

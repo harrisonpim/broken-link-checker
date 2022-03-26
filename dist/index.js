@@ -26922,11 +26922,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const sitemap_1 = __nccwpck_require__(5536);
 const url_1 = __nccwpck_require__(6437);
 const core_1 = __nccwpck_require__(2186);
-const fetch_1 = __nccwpck_require__(7560);
+const node_fetch_1 = __importDefault(__nccwpck_require__(467));
 const args_1 = __nccwpck_require__(4106);
 const log = __nccwpck_require__(8237)('index');
 function run() {
@@ -26945,19 +26948,20 @@ function run() {
             const sitemapUrl = args.sitemap;
             const rawAllowList = args.allowList || '[]';
             const allowList = JSON.parse(rawAllowList);
-            log(`sitemapUrl: ${sitemapUrl}`);
-            log(`allowList: ${JSON.stringify(allowList, null, 2)}`);
+            log(`Using sitemap: ${sitemapUrl}`);
+            log(`Using allowList: ${JSON.stringify(allowList, null, 2)}`);
             // Construct the base url from the sitemap url
             const baseUrl = (0, url_1.getBaseUrl)(sitemapUrl);
             // Fetch the sitemap and parse a list of URLs from it
-            const sitemap = yield (0, fetch_1.fetchWithCache)(sitemapUrl).then((res) => res.text());
+            const sitemap = yield (0, node_fetch_1.default)(sitemapUrl).then((res) => res.text());
             const urls = yield (0, sitemap_1.getUrlsFromSitemap)(sitemap);
             // We'll return an object with each URL from the sitemap keys and a list
             // of any links which do not return a 200 as the values
             const brokenLinks = {};
             for (const url of urls) {
                 try {
-                    const page = yield (0, fetch_1.fetchWithCache)(url).then((res) => res.text());
+                    log(`Checking ${url}`);
+                    const page = yield (0, node_fetch_1.default)(url).then((res) => res.text());
                     const linksOnPage = yield (0, sitemap_1.getLinksOnPage)(page, baseUrl);
                     const linksToCheck = (0, sitemap_1.filterAllowedLinks)(linksOnPage, allowList);
                     const brokenLinksOnPage = [];
@@ -26966,6 +26970,7 @@ function run() {
                             brokenLinksOnPage.push(url);
                         }
                     }
+                    log(`Found ${brokenLinksOnPage.length} broken links on ${url}`);
                     brokenLinks[url] = brokenLinksOnPage;
                 }
                 catch (error) {
@@ -27065,8 +27070,8 @@ function fetchWithCache(url) {
         }
         const response = yield (0, node_fetch_1.default)(url);
         log(`Using fresh response for ${url}`);
-        cache.set(url, response);
-        return response;
+        cache.set(url, response.status);
+        return response.status;
     });
 }
 exports.fetchWithCache = fetchWithCache;
@@ -27165,8 +27170,7 @@ function isBroken(url) {
         let broken = false;
         if (url.startsWith('http')) {
             try {
-                const response = yield (0, fetch_1.fetchWithCache)(url);
-                const { status } = response;
+                const status = yield (0, fetch_1.fetchWithCache)(url);
                 log(`${url} returned ${status}`);
                 if (status !== 200) {
                     broken = true;
