@@ -3,9 +3,11 @@
   "version": "0.1.2",
   "description": "A github action to periodically check a site for broken links",
   "scripts": {
-    "lint": "eslint . --fix",
+    "format": "prettier --write **/*.ts",
+    "lint": "eslint --fix .",
     "main": "node dist/index.js",
-    "prepare": "ncc build index.ts --license licenses.txt",
+    "package": "ncc build index.ts --license licenses.txt",
+    "prepare": "yarn format && yarn lint && yarn package",
     "test": "jest"
   },
   "repository": "git@github.com:harrisonpim/broken-link-checker.git",

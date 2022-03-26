@@ -1,23 +1,24 @@
-import { getInput, setFailed, warning } from '@actions/core'
 import { getLinksOnPage, getUrlsFromSitemap } from './src/sitemap'
+import { setFailed, warning } from '@actions/core'
 
 import { fetchWithCache } from './src/fetch'
+import { gatherArgs } from './src/args'
 import { getBaseUrl } from './src/url'
 
 async function run() {
   try {
-    // Get the sitemap from github actions, or arguments if invoked from CLI
-    const sitemapUrl = getInput('sitemap') || process.argv[2]
-
-    // Get a list of allowed urls from the action input, or arguments if invoked from CLI.
-    // The list should be formatted as a JSON array of strings, eg:
-    // [
-    //   "https://example.com/",
-    //   "https://example.com/page1",
-    //   "https://example.com/page2"
-    // ]
-    const rawAllowList = getInput('allowList') || process.argv[3]
-    const allowList = JSON.parse(rawAllowList)
+    const args = await gatherArgs({
+      sitemap: {
+        type: 'string',
+        describe: 'The sitemap to crawl',
+      },
+      allowList: {
+        type: 'string',
+        describe: 'A JSON array of allowed urls',
+      },
+    })
+    const sitemapUrl = args.sitemap
+    const allowList = JSON.parse(args.allowList)
 
     // Construct the base url from the sitemap url
     const baseUrl = getBaseUrl(sitemapUrl)
