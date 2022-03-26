@@ -1,5 +1,9 @@
+import {
+  filterAllowedLinks,
+  getLinksOnPage,
+  getUrlsFromSitemap,
+} from './src/sitemap'
 import { getBaseUrl, isBroken } from './src/url'
-import { getLinksOnPage, getUrlsFromSitemap } from './src/sitemap'
 import { setFailed, warning } from '@actions/core'
 
 import { fetchWithCache } from './src/fetch'
@@ -20,9 +24,10 @@ async function run() {
       },
     })
     const sitemapUrl = args.sitemap
-    const allowList = JSON.parse(args.allowList)
-    log(`sitemapUrl: ${sitemapUrl}`)
-    log(`allowList: ${JSON.stringify(allowList, null, 2)}`)
+    const rawAllowList = args.allowList || '[]'
+    const allowList = JSON.parse(rawAllowList)
+    log(`Using sitemap: ${sitemapUrl}`)
+    log(`Using allowList: ${JSON.stringify(allowList, null, 2)}`)
 
     // Construct the base url from the sitemap url
     const baseUrl = getBaseUrl(sitemapUrl)
@@ -38,9 +43,10 @@ async function run() {
       try {
         const page = await fetchWithCache(url).then((res) => res.text())
         const linksOnPage = await getLinksOnPage(page, baseUrl)
+        const linksToCheck = filterAllowedLinks(linksOnPage, allowList)
         const brokenLinksOnPage = []
-        for (const url of linksOnPage) {
-          if (await isBroken(url, allowList)) {
+        for (const url of linksToCheck) {
+          if (await isBroken(url)) {
             brokenLinksOnPage.push(url)
           }
         }

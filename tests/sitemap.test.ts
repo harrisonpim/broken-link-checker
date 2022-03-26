@@ -3,7 +3,7 @@ import { getLinksOnPage, getUrlsFromSitemap } from '../src/sitemap'
 import { readFileSync } from 'fs'
 
 describe('Sitemap', () => {
-  it('should find the correct set of urls in a sitemap', async () => {
+  it('Should find the correct set of urls in a sitemap', async () => {
     const sitemap = readFileSync('./tests/data/sitemap.xml', 'utf8')
     const urls = getUrlsFromSitemap(sitemap)
     expect(urls).toEqual(
@@ -15,7 +15,7 @@ describe('Sitemap', () => {
     )
   })
 
-  it('should find the correct set of links on a page', async () => {
+  it('Should find the correct set of links on a page', async () => {
     const page = readFileSync('./tests/data/page.html', 'utf8')
     const links = await getLinksOnPage(page, 'https://example.com')
     expect(links).toEqual(

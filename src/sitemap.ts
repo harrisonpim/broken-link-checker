@@ -25,3 +25,7 @@ export async function getLinksOnPage(page, baseUrl) {
   })
   return linksOnPage
 }
+
+export function filterAllowedLinks(links, allowList) {
+  return links.filter((link) => !allowList.includes(link))
+}

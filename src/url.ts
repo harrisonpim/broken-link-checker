@@ -16,12 +16,9 @@ export function getBaseUrl(url) {
   return urlObj.origin
 }
 
-export async function isBroken(url, allowList) {
+export async function isBroken(url) {
   let broken = false
-  const inAllowList = allowList.includes(url)
-  if (inAllowList) {
-    log(`${url} is in the allow list`)
-  } else if (url.startsWith('http')) {
+  if (url.startsWith('http')) {
     try {
       const response = await fetchWithCache(url)
       const { status } = response
