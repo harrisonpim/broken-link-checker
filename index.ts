@@ -1,9 +1,11 @@
+import { getBaseUrl, isBroken } from './src/url'
 import { getLinksOnPage, getUrlsFromSitemap } from './src/sitemap'
 import { setFailed, warning } from '@actions/core'
 
 import { fetchWithCache } from './src/fetch'
 import { gatherArgs } from './src/args'
-import { getBaseUrl } from './src/url'
+
+const log = require('debug')('index')
 
 async function run() {
   try {
@@ -19,6 +21,8 @@ async function run() {
     })
     const sitemapUrl = args.sitemap
     const allowList = JSON.parse(args.allowList)
+    log(`sitemapUrl: ${sitemapUrl}`)
+    log(`allowList: ${JSON.stringify(allowList, null, 2)}`)
 
     // Construct the base url from the sitemap url
     const baseUrl = getBaseUrl(sitemapUrl)
@@ -36,16 +40,8 @@ async function run() {
         const linksOnPage = await getLinksOnPage(page, baseUrl)
         const brokenLinksOnPage = []
         for (const url of linksOnPage) {
-          if (url.startsWith('http') && !allowList.includes(url)) {
-            try {
-              const response = await fetchWithCache(url)
-              const { status } = response
-              if (status !== 200) {
-                brokenLinksOnPage.push(url)
-              }
-            } catch (error) {
-              brokenLinksOnPage.push(url)
-            }
+          if (await isBroken(url, allowList)) {
+            brokenLinksOnPage.push(url)
           }
         }
         brokenLinks[url] = brokenLinksOnPage
