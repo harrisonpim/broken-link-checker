@@ -8,6 +8,9 @@ inputs:
     sitemap:
         description: 'The root URL of the website you wish to crawl'
         required: true
+    allowList:
+        description: 'A list of URLs that should be ignored'
+        required: false
 outputs:
     broken-links:
         description: 'A list of broken links'
