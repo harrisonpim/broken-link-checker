@@ -26954,7 +26954,7 @@ function run() {
             const baseUrl = (0, url_1.getBaseUrl)(sitemapUrl);
             // Fetch the sitemap and parse a list of URLs from it
             const sitemap = yield (0, node_fetch_1.default)(sitemapUrl).then((res) => res.text());
-            const urls = yield (0, sitemap_1.getUrlsFromSitemap)(sitemap);
+            const urls = yield (0, sitemap_1.getUrlsFromSitemap)(sitemap).slice(0, 100);
             // We'll return an object with each URL from the sitemap keys and a list
             // of any links which do not return a 200 as the values
             const brokenLinks = {};
