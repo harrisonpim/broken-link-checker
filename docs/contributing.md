@@ -39,7 +39,7 @@ New versions of the action are made available every time a new [release](https:/
 To release a new version of the package, first compile the package from typescript to the `/dist` directory by running:
 
 ```sh
-yarn prepare
+yarn all
 ```
 
 Make sure the version number is appropriately bumped in `package.json` (using  [semantic versioning](https://semver.org/) principles), and push your changes to the `main` branch.

@@ -9,11 +9,11 @@ inputs:
         description: 'The root URL of the website you wish to crawl'
         required: true
     allowList:
-        description: 'A list of URLs that should be ignored'
+        description: 'A list of URLs that should be ignored, formatted as a JSON array'
         required: false
 outputs:
     broken-links:
-        description: 'A list of broken links'
+        description: 'A list of broken links and the page where they were found'
 runs:
   using: 'node16'
   main: 'dist/index.js'

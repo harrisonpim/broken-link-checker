@@ -1,13 +1,13 @@
 {
   "name": "broken-link-checker",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A github action to periodically check a site for broken links",
   "scripts": {
     "format": "prettier --write **/*.ts",
     "lint": "eslint --fix .",
     "main": "node dist/index.js",
     "package": "ncc build index.ts --license licenses.txt",
-    "prepare": "yarn format && yarn lint && yarn package",
+    "all": "yarn format && yarn lint && yarn test && yarn package",
     "test": "jest"
   },
   "repository": "git@github.com:harrisonpim/broken-link-checker.git",
