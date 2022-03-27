@@ -26950,13 +26950,9 @@ function run() {
             const allowList = JSON.parse(rawAllowList);
             log(`Using sitemap: ${sitemapUrl}`);
             log(`Using allowList: ${JSON.stringify(allowList, null, 2)}`);
-            // Construct the base url from the sitemap url
             const baseUrl = (0, url_1.getBaseUrl)(sitemapUrl);
-            // Fetch the sitemap and parse a list of URLs from it
             const sitemap = yield (0, node_fetch_1.default)(sitemapUrl).then((res) => res.text());
-            const urls = yield (0, sitemap_1.getUrlsFromSitemap)(sitemap).slice(0, 100);
-            // We'll return an object with each URL from the sitemap keys and a list
-            // of any links which do not return a 200 as the values
+            const urls = yield (0, sitemap_1.getUrlsFromSitemap)(sitemap);
             const brokenLinks = {};
             for (const url of urls) {
                 try {
@@ -26978,14 +26974,12 @@ function run() {
                     brokenLinks[url] = [];
                 }
             }
-            // Construct a failure message for any links which don't return a 200
             const failureMessages = [];
             for (const url in brokenLinks) {
                 if (brokenLinks[url].length > 0) {
                     failureMessages.push(`${url} contains broken links:\n${brokenLinks[url].join(', ')}\n`);
                 }
             }
-            // If there are any broken links, set the action status to failure
             if (failureMessages.length > 0) {
                 (0, core_1.setFailed)(failureMessages.join('\n'));
             }
