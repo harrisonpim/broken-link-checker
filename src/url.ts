@@ -18,17 +18,23 @@ export function getBaseUrl(url) {
 
 export async function isBroken(url) {
   let broken = false
+  let statusCode = 200
   if (url.startsWith('http')) {
     try {
-      const status = await fetchWithCache(url)
-      log(`${url} returned ${status}`)
-      if (status !== 200) {
+      statusCode = await fetchWithCache(url)
+      log(`${url} returned ${statusCode}`)
+      if (statusCode !== 200) {
         broken = true
       }
     } catch (error) {
-      log(`${url} returned ${error}`)
+      log(`Failed to fetch ${url}`)
       broken = true
+      statusCode = 500
     }
+  } else {
+    log(`${url} is not a valid url`)
+    broken = true
+    statusCode = 500
   }
-  return broken
+  return { broken, statusCode }
 }

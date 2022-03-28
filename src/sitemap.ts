@@ -27,5 +27,7 @@ export async function getLinksOnPage(page, baseUrl) {
 }
 
 export function filterAllowedLinks(links, allowList) {
-  return links.filter((link) => !allowList.includes(link))
+  return links
+    .filter((link) => !allowList.includes(link))
+    .filter((link) => link.startsWith('http'))
 }
