@@ -26962,8 +26962,9 @@ function run() {
                     const linksToCheck = (0, sitemap_1.filterAllowedLinks)(linksOnPage, allowList);
                     const brokenLinksOnPage = [];
                     for (const url of linksToCheck) {
-                        if (yield (0, url_1.isBroken)(url)) {
-                            brokenLinksOnPage.push(url);
+                        const { broken, statusCode } = yield (0, url_1.isBroken)(url);
+                        if (broken) {
+                            brokenLinksOnPage.push({ url, statusCode });
                         }
                     }
                     log(`Found ${brokenLinksOnPage.length} broken links on ${url}`);
@@ -26977,7 +26978,10 @@ function run() {
             const failureMessages = [];
             for (const url in brokenLinks) {
                 if (brokenLinks[url].length > 0) {
-                    failureMessages.push(`${url} contains broken links:\n${brokenLinks[url].join(', ')}\n`);
+                    const errors = brokenLinks[url]
+                        .map((link) => `${link.url} returned ${link.statusCode}`)
+                        .join('\n');
+                    failureMessages.push(`${url} contains broken links:\n${errors}\n`);
                 }
             }
             if (failureMessages.length > 0) {
@@ -27122,7 +27126,9 @@ function getLinksOnPage(page, baseUrl) {
 }
 exports.getLinksOnPage = getLinksOnPage;
 function filterAllowedLinks(links, allowList) {
-    return links.filter((link) => !allowList.includes(link));
+    return links
+        .filter((link) => !allowList.includes(link))
+        .filter((link) => link.startsWith('http'));
 }
 exports.filterAllowedLinks = filterAllowedLinks;
 
@@ -27162,20 +27168,27 @@ exports.getBaseUrl = getBaseUrl;
 function isBroken(url) {
     return __awaiter(this, void 0, void 0, function* () {
         let broken = false;
+        let statusCode = 200;
         if (url.startsWith('http')) {
             try {
-                const status = yield (0, fetch_1.fetchWithCache)(url);
-                log(`${url} returned ${status}`);
-                if (status !== 200) {
+                statusCode = yield (0, fetch_1.fetchWithCache)(url);
+                log(`${url} returned ${statusCode}`);
+                if (statusCode !== 200) {
                     broken = true;
                 }
             }
             catch (error) {
-                log(`${url} returned ${error}`);
+                log(`Failed to fetch ${url}`);
                 broken = true;
+                statusCode = 500;
             }
         }
-        return broken;
+        else {
+            log(`${url} is not a valid url`);
+            broken = true;
+            statusCode = 500;
+        }
+        return { broken, statusCode };
     });
 }
 exports.isBroken = isBroken;

@@ -43,8 +43,9 @@ async function run() {
         const linksToCheck = filterAllowedLinks(linksOnPage, allowList)
         const brokenLinksOnPage = []
         for (const url of linksToCheck) {
-          if (await isBroken(url)) {
-            brokenLinksOnPage.push(url)
+          const { broken, statusCode } = await isBroken(url)
+          if (broken) {
+            brokenLinksOnPage.push({ url, statusCode })
           }
         }
         log(`Found ${brokenLinksOnPage.length} broken links on ${url}`)
@@ -58,9 +59,10 @@ async function run() {
     const failureMessages = []
     for (const url in brokenLinks) {
       if (brokenLinks[url].length > 0) {
-        failureMessages.push(
-          `${url} contains broken links:\n${brokenLinks[url].join(', ')}\n`
-        )
+        const errors = brokenLinks[url]
+          .map((link) => `${link.url} returned ${link.statusCode}`)
+          .join('\n')
+        failureMessages.push(`${url} contains broken links:\n${errors}\n`)
       }
     }
 
